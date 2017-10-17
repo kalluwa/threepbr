@@ -15,9 +15,17 @@ var height_offset_const = 30;
 //loader
 var loader_gltf;
 var shader_mat;
+var cube_loader;
 
 //textures
 var t_basemap;
+var t_mrmap;
+var t_normalmap;
+var t_roughnessmap;
+var t_metalnessmap;
+var t_diffuse_cubemap;
+var t_specular_cubemap;
+var t_brdfLUT;
 
 function init(containerId)
 {
@@ -53,6 +61,17 @@ function init_shader(vert_src,frag_src)
 
         uniforms:{
             t_basemap:{type:'t',value:0},
+            t_mrmap:{type:'t',value:0},
+            t_normalmap:{type:'t',value:0},
+            t_metalnessmap:{type:'t',value:0},
+            t_roughnessmap:{type:'t',value:0},
+            t_brdfLUT:{type:'t',value:0},
+            
+            //env map
+            t_diffuse_cubemap:{type:'t',value:0},
+            t_specular_cubemap:{type:'t',value:0},
+
+            v_campos:{type:'v',value:0}
         }
     });
 
@@ -85,7 +104,7 @@ function init_scene(containerId){
     camera = new THREE.PerspectiveCamera(45,can_width/parseFloat(can_height),0.1,1000);
     
     camera.position.set(0,0,-5);
-    renderer = new THREE.WebGLRenderer();
+    renderer = new THREE.WebGLRenderer({antialias: true});
     cam_controls = new THREE.OrbitControls(camera,renderer.domElement);
 
     loader_gltf = new THREE.GLTFLoader();
@@ -97,6 +116,40 @@ function init_scene(containerId){
 
     
     load_gltf();
+
+    //env map
+    cube_loader = new THREE.CubeTextureLoader();
+    cube_loader.load([
+        'textures/papermill/diffuse/diffuse_back_0.jpg',
+        'textures/papermill/diffuse/diffuse_front_0.jpg',
+        'textures/papermill/diffuse/diffuse_top_0.jpg',
+        'textures/papermill/diffuse/diffuse_bottom_0.jpg',
+        'textures/papermill/diffuse/diffuse_left_0.jpg',
+        'textures/papermill/diffuse/diffuse_right_0.jpg'
+    ], function (texture) {
+        t_diffuse_cubemap = texture;
+
+        shader_mat.uniforms.t_diffuse_cubemap.value = t_diffuse_cubemap;
+    });
+    cube_loader.load([
+        'textures/papermill/specular/specular_back_0.jpg',
+        'textures/papermill/specular/specular_front_0.jpg',
+        'textures/papermill/specular/specular_top_0.jpg',
+        'textures/papermill/specular/specular_bottom_0.jpg',
+        'textures/papermill/specular/specular_left_0.jpg',
+        'textures/papermill/specular/specular_right_0.jpg'
+    ], function (texture) {
+        t_specular_cubemap = texture;
+
+        shader_mat.uniforms.t_specular_cubemap.value = t_specular_cubemap;
+    });
+
+    var tex_loader = new THREE.TextureLoader();
+    tex_loader.load('textures/brdfLUT.png',function(texture){
+        t_brdfLUT = texture;
+
+        shader_mat.uniforms.t_brdfLUT.value = t_brdfLUT;
+    });
     //put renderer into canvas
     disp.appendChild(renderer.domElement);
 
@@ -122,11 +175,17 @@ function load_gltf()
         //提取纹理图像数据
         var extract_mat = obj3d.children[0].children[0].material;
         t_basemap = extract_mat.map;
+
+        t_mrmap = extract_mat.metalnessMap;
+        
+        t_normalmap = extract_mat.normalMap;
+
         console.log(obj3d.children[0].children[0].material);
         
         //设置为shader_mat里面的数据
         shader_mat.uniforms.t_basemap.value = t_basemap;//默认贴图
-
+        shader_mat.uniforms.t_mrmap.value = t_mrmap;
+        shader_mat.uniforms.t_normalmap.value = t_normalmap;
 
         //使用shader_mat作为渲染
         obj3d.children[0].children[0].material = shader_mat;
@@ -145,6 +204,8 @@ function render()
 {
     renderer.render(scene,camera);
 
+    //update shader params
+    shader_mat.uniforms.v_campos.value = camera.position;
     //loop
     requestAnimationFrame(render);
 }
