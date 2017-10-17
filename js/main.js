@@ -14,6 +14,10 @@ var height_offset_const = 30;
 
 //loader
 var loader_gltf;
+var shader_mat;
+
+//textures
+var t_basemap;
 
 function init(containerId)
 {
@@ -48,7 +52,7 @@ function init_shader(vert_src,frag_src)
         fragmentShader:frag_src,
 
         uniforms:{
-            u_MVPMatrix:{value:0}
+            t_basemap:{type:'t',value:0},
         }
     });
 
@@ -98,6 +102,9 @@ function init_scene(containerId){
 
 
     onInnerEvent()
+
+    //render scene
+    render();
 }
 
 function load_gltf()
@@ -110,8 +117,21 @@ function load_gltf()
         var object = gltf.scene;
         console.log('time elapsed:'+ ( performance.now() - loadStartTime ).toFixed( 2 )+'ms')
         
+        var obj3d = object.children[0];
 
-        scene.add( object.children[0] );
+        //提取纹理图像数据
+        var extract_mat = obj3d.children[0].children[0].material;
+        t_basemap = extract_mat.map;
+        console.log(obj3d.children[0].children[0].material);
+        
+        //设置为shader_mat里面的数据
+        shader_mat.uniforms.t_basemap.value = t_basemap;//默认贴图
+
+
+        //使用shader_mat作为渲染
+        obj3d.children[0].children[0].material = shader_mat;
+
+        scene.add( obj3d );
         onSize();
     });
 

@@ -1,7 +1,11 @@
 
+uniform sampler2D t_basemap;
+varying vec2 vUV;
+
 void main()
 {
-  gl_FragColor = vec4(1.0,0.0,0.0,1.0);
+    vec4 c_base = texture2D(t_basemap,vUV);
+    gl_FragColor = c_base;
 }
 
 

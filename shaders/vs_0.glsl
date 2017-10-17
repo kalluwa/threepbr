@@ -1,10 +1,10 @@
-attribute vec4 a_Position;
-
-uniform mat4 u_MVPMatrix;
+varying vec2 vUV;
 
 void main()
 {
-  gl_Position = u_MVPMatrix * a_Position;
+    vUV = uv;
+    mat4 mvpMatrix = projectionMatrix * modelViewMatrix;
+    gl_Position = mvpMatrix * vec4(position,1.0);
 }
 
 
