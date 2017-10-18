@@ -47,6 +47,8 @@ function init(containerId)
         }
     });
     $.when(vertDeferred, fragDeferred).then((vertSource, fragSource) => {
+        renderer = new THREE.WebGLRenderer({antialias: true});
+        renderer.context.get
         init_shader(vertSource[0], fragSource[0]);
         init_scene(containerId);
     });
@@ -74,8 +76,8 @@ function init_shader(vert_src,frag_src)
             v_campos:{type:'v',value:0}
         }
     });
-
-
+    shader_mat.extensions.derivatives = true;
+    console.log("2")
 }
 
 function init_scene(containerId){
@@ -100,11 +102,14 @@ function init_scene(containerId){
      * 2 prepare for THREE
      */
     scene = new THREE.Scene();
-    scene.background = new THREE.Color(0xFFFFFF);
+    scene.background = new THREE.Color(0x123456);
     camera = new THREE.PerspectiveCamera(45,can_width/parseFloat(can_height),0.1,1000);
     
     camera.position.set(0,0,-5);
-    renderer = new THREE.WebGLRenderer({antialias: true});
+    
+    
+    console.log("1")
+    
     cam_controls = new THREE.OrbitControls(camera,renderer.domElement);
 
     loader_gltf = new THREE.GLTFLoader();
@@ -132,15 +137,15 @@ function init_scene(containerId){
         shader_mat.uniforms.t_diffuse_cubemap.value = t_diffuse_cubemap;
     });
     cube_loader.load([
-        'textures/papermill/specular/specular_back_0.jpg',
-        'textures/papermill/specular/specular_front_0.jpg',
-        'textures/papermill/specular/specular_top_0.jpg',
-        'textures/papermill/specular/specular_bottom_0.jpg',
-        'textures/papermill/specular/specular_left_0.jpg',
-        'textures/papermill/specular/specular_right_0.jpg'
+        'textures/papermill/specular/specular_back_2.jpg',
+        'textures/papermill/specular/specular_front_2.jpg',
+        'textures/papermill/specular/specular_left_2.jpg',
+        'textures/papermill/specular/specular_right_2.jpg',
+        'textures/papermill/specular/specular_top_2.jpg',
+        'textures/papermill/specular/specular_bottom_2.jpg'
     ], function (texture) {
         t_specular_cubemap = texture;
-
+        t_specular_cubemap.generateMipmaps = true;
         shader_mat.uniforms.t_specular_cubemap.value = t_specular_cubemap;
     });
 
@@ -153,9 +158,8 @@ function init_scene(containerId){
     //put renderer into canvas
     disp.appendChild(renderer.domElement);
 
-
     onInnerEvent()
-
+    
     //render scene
     render();
 }

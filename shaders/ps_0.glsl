@@ -10,20 +10,38 @@ uniform sampler2D t_brdfLUT;
 uniform vec3 v_campos;
 
 varying vec2 vUV;
-varying vec4 v_worldpos;
-varying vec3 v_nomral;
+varying vec3 v_worldpos;
+varying vec3 v_normal;
 
 //const value
-const float min_roughness = 0.01;
+const float min_roughness = 0.04;
 const float M_PI = 3.141592653589793;
-const vec3 v_lightdir = vec3(1.0,0.0,0.5);
+const vec3 v_lightdir = vec3(0.3,-0.4,0.5);
 const vec3 c_light = vec3(1.0,1.0,1.0);
 //PBR
 vec3 getNormal()
 {
+    // Retrieve the tangent space matrix
+    vec3 pos_dx = dFdx(v_worldpos);
+    vec3 pos_dy = dFdy(v_worldpos);
+    vec3 tex_dx = dFdx(vec3(vUV, 0.0));
+    vec3 tex_dy = dFdy(vec3(vUV, 0.0));
+    vec3 t = (tex_dy.t * pos_dx - tex_dx.t * pos_dy) / (tex_dx.s * tex_dy.t - tex_dy.s * tex_dx.t);
+
+    vec3 ng = normalize(v_normal);
+
+    t = normalize(t - ng * dot(ng, t));
+    vec3 b = normalize(cross(ng, t));
+    mat3 tbn = mat3(t, b, ng);
+
     vec3 n = texture2D(t_normalmap, vUV).rgb;
-    n = normalize(2.0 * n - 1.0);
-    return n;
+    vec3 nn = normalize(v_normal);//normalize(tbn*(2.0 * n - 1.0));//*vec3(u_NormalScale, u_NormalScale, 1.0);
+    return nn;
+
+    
+    //vec3 n = texture2D(t_normalmap, vUV).rgb;
+    //n = normalize(2.0 * n - 1.0);
+    //return n;
 }
 
 //封装输入
@@ -79,7 +97,7 @@ vec3 getIBLContribution(PBRInfo pbrInputs, vec3 n, vec3 reflection)
     //textureCubeLodEXT(t_specular_cubemap, reflection, lod).rgb;
 
     vec3 diffuse = diffuseLight * pbrInputs.diffuseColor;
-    vec3 specular = specularLight * (pbrInputs.specularColor * brdf.x + brdf.y);
+    vec3 specular =  specularLight * (pbrInputs.specularColor * brdf.x + brdf.y);
 
     return diffuse + specular;
 }
@@ -91,8 +109,8 @@ void main()
     */
     //决定显示的两个因素就是[metallic&&roughness]
     //这个[一般]来自pixel（texel）
-    float perceptualRoughness = 0.1;
-    float metallic = 0.6;
+    float perceptualRoughness = 1.0;
+    float metallic = 1.0;
     vec4 mrSample = texture2D(t_mrmap,vUV);
     perceptualRoughness = mrSample.g * perceptualRoughness;
     metallic = mrSample.b * metallic;
@@ -165,6 +183,7 @@ void main()
     */
     color += getIBLContribution(pbrInputs, n, reflection);
 
+    //vec3 vn = v_normal*2.0+1.0;
     gl_FragColor = vec4(color,1.0);
 }
 
