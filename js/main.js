@@ -125,24 +125,24 @@ function init_scene(containerId){
     //env map
     cube_loader = new THREE.CubeTextureLoader();
     cube_loader.load([
-        'textures/papermill/diffuse/diffuse_back_0.jpg',
-        'textures/papermill/diffuse/diffuse_front_0.jpg',
+        'textures/papermill/diffuse/diffuse_right_0.jpg',
+        'textures/papermill/diffuse/diffuse_left_0.jpg',
         'textures/papermill/diffuse/diffuse_top_0.jpg',
         'textures/papermill/diffuse/diffuse_bottom_0.jpg',
-        'textures/papermill/diffuse/diffuse_left_0.jpg',
-        'textures/papermill/diffuse/diffuse_right_0.jpg'
+        'textures/papermill/diffuse/diffuse_front_0.jpg',
+        'textures/papermill/diffuse/diffuse_back_0.jpg'
     ], function (texture) {
         t_diffuse_cubemap = texture;
 
         shader_mat.uniforms.t_diffuse_cubemap.value = t_diffuse_cubemap;
     });
     cube_loader.load([
-        'textures/papermill/specular/specular_back_2.jpg',
-        'textures/papermill/specular/specular_front_2.jpg',
-        'textures/papermill/specular/specular_left_2.jpg',
-        'textures/papermill/specular/specular_right_2.jpg',
-        'textures/papermill/specular/specular_top_2.jpg',
-        'textures/papermill/specular/specular_bottom_2.jpg'
+        'textures/papermill/specular/specular_right_0.jpg',
+        'textures/papermill/specular/specular_left_0.jpg',
+        'textures/papermill/specular/specular_top_0.jpg',
+        'textures/papermill/specular/specular_bottom_0.jpg',
+        'textures/papermill/specular/specular_front_0.jpg',
+        'textures/papermill/specular/specular_back_0.jpg'
     ], function (texture) {
         t_specular_cubemap = texture;
         t_specular_cubemap.generateMipmaps = true;
